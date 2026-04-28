@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env
+.conda/
+conda-env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project Specific
+# 下载的字幕文件和输出目录
+download/
+downloads/
+*.srt
+
+# 包含用户敏感路径的本地配置文件
+# （如 Chrome 路径、用户数据目录等绝对路径）
+config.py
+config.json
+.env.local
+settings_local.py
+
+# Chrome 调试产生的临时用户数据目录
+chrome_debug_temp/
+chrome_debug/
+remote-profile/
+chrome_temp/
+
+# Playwright
+playwright/.cache/
+
+# Logs
+*.log
+logs/
+log/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Test files
+test_*.py
+*_test.py
+test_downloads/
+temp/
+tmp/
+
+# 保留示例配置模板
+!config.example.py
+!config.template.json
