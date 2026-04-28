@@ -27,20 +27,26 @@
 ## 安装
 
 ```bash
-# 克隆仓库
 git clone <repository-url>
 cd BiliScribe
-
-# 安装依赖
 pip install playwright
 playwright install chromium
 ```
 
 ## 使用指南
 
-### 1. 启动 Chrome 调试模式
+### 1. 配置
 
-在 PowerShell（管理员模式）或终端中运行：
+**编辑 `chrome_subtitle_cdp.py` 文件顶部**的 `用户配置区域`，修改以下必需项：
+
+- `CHROME_EXE_PATH`：Chrome 浏览器路径
+- `USER_DATA_DIR`：Chrome 用户数据目录
+- `DOWNLOAD_DIR`：字幕保存目录
+- `VIDEO_LIST`：待下载的视频 BV 号列表
+
+脚本包含配置验证，未修改占位符会提示错误并退出。
+
+### 2. 启动 Chrome 调试模式
 
 ```powershell
 & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
@@ -48,94 +54,53 @@ playwright install chromium
   --user-data-dir="C:\chrome_debug_temp"
 ```
 
-参数说明：
+注意：`--user-data-dir` 建议指向临时目录，避免与日常使用冲突；如需登录态，请先在该 Chrome 中登录 Bilibili。
 
-- `--remote-debugging-port=9222`：开启远程调试端口（脚本默认连接 9222 端口）
-- `--user-data-dir`：**建议指定临时目录**，避免与日常使用的 Chrome 配置文件冲突
-
-### 2. 配置下载脚本
-
-编辑 `chrome_subtitle_cdp.py` 顶部的配置区域：
-
-```python
-# ==================== 配置区域 ====================
-CDP_PORT = 9222  # 与 Chrome 启动参数保持一致
-DOWNLOAD_DIR = Path("./download")  # 字幕保存目录（相对路径或绝对路径）
-VIDEO_LIST = [
-    "BV1884y1k7cv",  # 替换为目标 BV 号
-    # 添加更多 BV 号
-]
-# =================================================
-```
-
-### 3. 运行字幕下载
+### 3. 运行下载
 
 ```bash
 python chrome_subtitle_cdp.py
 ```
 
-脚本将自动：
-
-- 连接到已启动的 Chrome 实例
-- 遍历视频所有分 P
-- 下载字幕并保存为 `标题_PXX_分P标题_BV号.srt`
+脚本自动连接 Chrome、遍历分 P、下载字幕并保存为 `标题_PXX_分P标题_BV号.srt`。
 
 ### 4. 批量重命名（可选）
 
-下载后的文件名可能较长，运行重命名脚本提取简洁格式：
-
-编辑 `rename.py` 配置字幕所在目录：
-
-```python
-SUBTITLE_DIR = Path("./download/【课程名】")  # 修改为实际子目录
-```
-
-执行重命名：
+编辑 `rename.py` 中的 `SUBTITLE_DIR` 为实际字幕目录，执行：
 
 ```bash
 python rename.py
 ```
 
-重命名规则：
-
-- 输入：`【课程名】完整标题_P01_第一讲_BVxxxxx.srt`
-- 输出：`P01_第一讲.srt`
+重命名规则：`【课程名】完整标题_P01_第一讲_BVxxxxx.srt` → `P01_第一讲.srt`
 
 ## 项目结构
 
 ```
 BiliScribe/
 ├── chrome_subtitle_cdp.py    # 主下载脚本（CDP 连接、API 调用、SRT 转换）
-├── rename.py                 # 批量重命名工具（文件名清理）
-├── download/                 # 默认字幕输出目录（自动生成）
+├── rename.py                 # 批量重命名工具
+├── download/                 # 默认字幕输出目录
 └── README.md                 # 本文件
 ```
 
-## 配置参数详解
+## 配置参数
 
-### chrome_subtitle_cdp.py
-
-
-| 参数           | 说明                | 示例               |
-| -------------- | ------------------- | ------------------ |
-| `CDP_PORT`     | Chrome 远程调试端口 | `9222`             |
-| `DOWNLOAD_DIR` | 字幕文件保存路径    | `./download`       |
-| `VIDEO_LIST`   | 待下载 BV 号列表    | `["BV1xx411c7mD"]` |
-
-### rename.py
-
-
-| 参数           | 说明               | 示例                |
-| -------------- | ------------------ | ------------------- |
-| `SUBTITLE_DIR` | 需处理的字幕文件夹 | `./download/课程名` |
+| 参数              | 必填 | 说明                    | 示例                                                       |
+| :---------------- | :--- | :---------------------- | :--------------------------------------------------------- |
+| `CHROME_EXE_PATH` | 是   | Chrome 可执行文件路径   | `r"C:\Program Files\Google\Chrome\Application\chrome.exe"` |
+| `DOWNLOAD_DIR`    | 是   | 字幕保存路径            | `r"D:\subtitles"` 或 `"./download"`                        |
+| `VIDEO_LIST`      | 是   | 视频 BV 号列表          | `["BV1xx411c7mD"]`                                         |
+| `USER_DATA_DIR`   | 建议 | Chrome 临时用户数据目录 | `r"C:\chrome_temp_data"`                                   |
+| `CDP_PORT`        | 否   | 远程调试端口            | `9222`                                                     |
+| `SUBTITLE_MODE`   | 否   | 字幕类型偏好            | `"AI"` 或 `"SRT"`                                          |
 
 ## 注意事项
 
-1. **Chrome 启动**：确保先启动 Chrome 调试模式再运行脚本，否则会提示连接失败
-2. **用户数据目录**：建议 `--user-data-dir` 指向临时目录，避免污染日常浏览器数据
-3. **网络环境**：部分视频字幕需要登录后才能获取，请先在 Chrome 中登录 Bilibili 账号
-4. **频率限制**：脚本已内置 2-4 秒随机延迟，频繁下载可能导致 IP 被临时限制，建议间隔使用
-5. **路径问题**：开源仓库版本使用相对路径 `./download`，使用前请根据实际环境调整
+1. **配置检查**：首次运行会验证 `CHROME_EXE_PATH`、`DOWNLOAD_DIR` 和 `VIDEO_LIST` 是否已修改，未修改会报错退出
+2. **启动顺序**：必须先启动 Chrome 调试模式，再运行脚本
+3. **登录状态**：部分字幕需登录获取，请在调试 Chrome 中提前登录 Bilibili
+4. **频率限制**：内置 2-4 秒随机延迟，频繁下载可能导致 IP 被限，建议间隔使用
 
 ## 免责声明
 

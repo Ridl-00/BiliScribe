@@ -1,4 +1,45 @@
 # chrome_subtitle_cdp.py
+# ================== 用户配置区域 ==================
+# 使用说明：请修改以下配置后再运行脚本
+
+# 1. Chrome 浏览器可执行文件路径（必须修改）
+# 示例: r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+CHROME_EXE_PATH = r"<请修改为你的Chrome路径>"
+
+# 2. Chrome 用户数据目录（可选，建议修改）
+# 说明: 指向一个新的空文件夹用于存储临时用户数据，避免与日常使用冲突
+# Windows 示例: r"C:\chrome_debug_temp"
+# macOS 示例: "/Users/你的用户名/chrome_debug_temp"
+USER_DATA_DIR = r"<建议修改为空文件夹路径>"
+
+# 3. 字幕保存目录（必须修改）
+# 示例: r"D:\bilibili_subtitles" 或 "./download"
+DOWNLOAD_DIR = Path(r"<请修改为你想保存字幕的目录>")
+
+# 4. 视频 BV 号列表（必须修改）
+# 获取方法: 打开 B站视频，URL 中 bv 开头的字符串即为 BV 号
+VIDEO_LIST = [
+    "BV1884y1k7cv",  # 示例，请删除并替换为你的目标视频 BV 号
+    # "BV1xx411c7mD",  # 可继续添加更多
+]
+
+# 5. 其他配置（可选，一般保持默认即可）
+CDP_PORT = 9222           # Chrome 远程调试端口，如被占用可改为 9223 等
+SUBTITLE_MODE = "AI"      # "AI"=优先AI生成字幕, "SRT"=优先上传者字幕
+# =================================================
+
+# ==================== 配置验证 ====================
+if "<" in CHROME_EXE_PATH or "请修改为" in CHROME_EXE_PATH:
+    raise ValueError("错误：请先在文件开头的配置区域设置 CHROME_EXE_PATH（Chrome 浏览器路径）")
+if "<" in str(DOWNLOAD_DIR) or "请修改为" in str(DOWNLOAD_DIR):
+    raise ValueError("错误：请先在文件开头的配置区域设置 DOWNLOAD_DIR（保存目录）")
+if not VIDEO_LIST or "BV1884y1k7cv" in VIDEO_LIST:
+    print("警告：请先在文件开头的 VIDEO_LIST 中修改为目标视频的 BV 号")
+    print("示例: 视频 https://www.bilibili.com/video/BV1xx411c7mD 的 BV 号为 BV1xx411c7mD")
+    input("按回车键退出...")
+    exit(1)
+# =================================================
+
 import asyncio
 import os
 import re
@@ -7,26 +48,6 @@ import time
 import subprocess
 from pathlib import Path
 from playwright.async_api import async_playwright, Page
-
-# ==================== 配置区域 ====================
-# 使用说明：
-# 1. 直接修改下方默认值，或
-# 2. 设置环境变量（推荐）：PORT、DOWNLOAD_DIR、CHROME_PATH、CHROME_USER_DATA
-# 3. Windows PowerShell 设置环境变量示例：
-#    $env:DOWNLOAD_DIR = "D:\bilibili_subtitles"
-#    $env:CHROME_PATH = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-
-# Chrome 远程调试端口（默认 9222）
-CDP_PORT = 9222
-DOWNLOAD_DIR = Path(r"E:\projects_2026\BiliScribe\download")
-VIDEO_LIST = [
-    "BV1884y1k7cv",
-    # 添加更多 BV 号
-]
-SUBTITLE_MODE = "AI"  # "SRT" 或 "AI"
-CHROME_EXE_PATH = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-USER_DATA_DIR = r"C:\Users\21905\AppData\Local\Google\Chrome\User Data"
-# =================================================
 
 class BilibiliSubtitleDownloader:
     def __init__(self):
